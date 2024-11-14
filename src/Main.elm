@@ -159,41 +159,60 @@ viewBreeds model =
         Success ->
             div []
                 [ button [ HE.onClick MorePlease, style "display" "block" ] [ text "More Please!" ]
-                , div [ style "margin" "auto", style "width" "50%" ]
-                    [ h3 [] [ text "Breeds (sub-breeds):" ]
-                    , select [ HE.onInput SelectBreed ]
-                        (L.map
-                            (\b ->
-                                let
-                                    subBreedsTxt =
-                                        if isEmpty b.subBreeds then
-                                            ""
+                , div [ class "breedTableDiv" ]
+                    [ table []
+                        [ thead [] [ tr [] [ th [ class "breedCol" ] [ text "Breed" ], th [] [ text "Sub-Breeds" ] ] ]
+                        , tbody [ class "breedTBody" ]
+                            (L.map
+                                (\b ->
+                                    let
+                                        subBreedsTxt =
+                                            if isEmpty b.subBreeds then
+                                                ""
 
-                                        else
-                                            " (" ++ String.fromInt (length b.subBreeds) ++ ")"
-                                in
-                                option
-                                    [ value b.name
-                                    , selected <| model.currBreed == Just b
-                                    ]
-                                    [ text <| b.name ++ subBreedsTxt ]
+                                            else
+                                                String.concat <| intersperse ", " b.subBreeds
+                                    in
+                                    tr [] [ td [ class "breedText" ] [ text <| b.name ], td [] [ text subBreedsTxt ] ]
+                                )
+                                model.allBreeds
                             )
-                            model.allBreeds
-                        )
-                    , h3 [] [ text "Sub-Breeds:" ]
-                    , ul []
-                        (case model.currBreed of
-                            Nothing ->
-                                []
-
-                            Just brd ->
-                                L.map (\sb -> li [] [ text sb ]) brd.subBreeds
-                        )
+                        ]
                     ]
                 ]
 
 
 
+{- h3 [] [ text "Breeds (sub-breeds):" ]
+   , select [ HE.onInput SelectBreed ]
+       (L.map
+           (\b ->
+               let
+                   subBreedsTxt =
+                       if isEmpty b.subBreeds then
+                           ""
+
+                       else
+                           " (" ++ String.fromInt (length b.subBreeds) ++ ")"
+               in
+               option
+                   [ value b.name
+                   , selected <| model.currBreed == Just b
+                   ]
+                   [ text <| b.name ++ subBreedsTxt ]
+           )
+           model.allBreeds
+       )
+   , h3 [] [ text "Sub-Breeds:" ]
+   , ul []
+       (case model.currBreed of
+           Nothing ->
+               []
+
+           Just brd ->
+               L.map (\sb -> li [] [ text sb ]) brd.subBreeds
+       )
+-}
 -- HTTP
 
 

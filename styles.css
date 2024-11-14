@@ -1,0 +1,35 @@
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  table-layout: fixed;
+}
+
+td,
+th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+  word-wrap: break-word;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+
+.breedTableDiv {
+  height: 400px;
+  overflow: auto;
+  margin: auto;
+  width: 75%;
+}
+
+.breedCol {
+  width: 150px;
+}
+
+.breedText {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
