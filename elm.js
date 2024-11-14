@@ -6200,7 +6200,7 @@ var $author$project$Main$getBreeds = $elm$http$Http$get(
 		url: 'https://dog.ceo/api/breeds/list/all'
 	});
 var $author$project$Main$Loading = {$: 'Loading'};
-var $author$project$Main$loadingModel = {allBreeds: _List_Nil, currBreed: $elm$core$Maybe$Nothing, state: $author$project$Main$Loading};
+var $author$project$Main$loadingModel = {allBreeds: _List_Nil, detailBreed: $elm$core$Maybe$Nothing, state: $author$project$Main$Loading};
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2($author$project$Main$loadingModel, $author$project$Main$getBreeds);
 };
@@ -6210,12 +6210,12 @@ var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
 var $author$project$Main$Model = F3(
-	function (state, allBreeds, currBreed) {
-		return {allBreeds: allBreeds, currBreed: currBreed, state: state};
+	function (state, allBreeds, detailBreed) {
+		return {allBreeds: allBreeds, detailBreed: detailBreed, state: state};
 	});
 var $author$project$Main$Success = {$: 'Success'};
 var $author$project$Main$Failure = {$: 'Failure'};
-var $author$project$Main$failureModel = {allBreeds: _List_Nil, currBreed: $elm$core$Maybe$Nothing, state: $author$project$Main$Failure};
+var $author$project$Main$failureModel = {allBreeds: _List_Nil, detailBreed: $elm$core$Maybe$Nothing, state: $author$project$Main$Failure};
 var $elm$core$List$filter = F2(
 	function (isGood, list) {
 		return A3(
@@ -6241,7 +6241,7 @@ var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
-			case 'MorePlease':
+			case 'Reload':
 				return _Utils_Tuple2($author$project$Main$loadingModel, $author$project$Main$getBreeds);
 			case 'GotBreeds':
 				var result = msg.a;
@@ -6292,7 +6292,7 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $author$project$Main$MorePlease = {$: 'MorePlease'};
+var $author$project$Main$Reload = {$: 'Reload'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
@@ -6368,7 +6368,7 @@ var $author$project$Main$viewBreeds = function (model) {
 						$elm$html$Html$button,
 						_List_fromArray(
 							[
-								$elm$html$Html$Events$onClick($author$project$Main$MorePlease)
+								$elm$html$Html$Events$onClick($author$project$Main$Reload)
 							]),
 						_List_fromArray(
 							[
@@ -6383,17 +6383,6 @@ var $author$project$Main$viewBreeds = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$MorePlease),
-								A2($elm$html$Html$Attributes$style, 'display', 'block')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('More Please!')
-							])),
 						A2(
 						$elm$html$Html$div,
 						_List_fromArray(

@@ -54,7 +54,7 @@ main =
 type alias Model =
     { state : AppState
     , allBreeds : List Breed
-    , currBreed : Maybe Breed
+    , detailBreed : Maybe Breed
     }
 
 
@@ -72,12 +72,12 @@ type alias Breed =
 
 loadingModel : Model
 loadingModel =
-    { state = Loading, allBreeds = [], currBreed = Nothing }
+    { state = Loading, allBreeds = [], detailBreed = Nothing }
 
 
 failureModel : Model
 failureModel =
-    { state = Failure, allBreeds = [], currBreed = Nothing }
+    { state = Failure, allBreeds = [], detailBreed = Nothing }
 
 
 init : () -> ( Model, Cmd Msg )
@@ -90,7 +90,7 @@ init _ =
 
 
 type Msg
-    = MorePlease
+    = Reload
     | GotBreeds (Result Http.Error (List Breed))
     | SelectBreed String
 
@@ -98,7 +98,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        MorePlease ->
+        Reload ->
             ( loadingModel, getBreeds )
 
         GotBreeds result ->
@@ -150,7 +150,7 @@ viewBreeds model =
         Failure ->
             div []
                 [ text "I could not load the breeds for some reason. "
-                , button [ HE.onClick MorePlease ] [ text "Try Again!" ]
+                , button [ HE.onClick Reload ] [ text "Try Again!" ]
                 ]
 
         Loading ->
@@ -158,8 +158,7 @@ viewBreeds model =
 
         Success ->
             div []
-                [ button [ HE.onClick MorePlease, style "display" "block" ] [ text "More Please!" ]
-                , div [ class "breedTableDiv" ]
+                [ div [ class "breedTableDiv" ]
                     [ table []
                         [ thead [] [ tr [] [ th [ class "breedCol" ] [ text "Breed" ], th [] [ text "Sub-Breeds" ] ] ]
                         , tbody [ class "breedTBody" ]
@@ -183,36 +182,6 @@ viewBreeds model =
 
 
 
-{- h3 [] [ text "Breeds (sub-breeds):" ]
-   , select [ HE.onInput SelectBreed ]
-       (L.map
-           (\b ->
-               let
-                   subBreedsTxt =
-                       if isEmpty b.subBreeds then
-                           ""
-
-                       else
-                           " (" ++ String.fromInt (length b.subBreeds) ++ ")"
-               in
-               option
-                   [ value b.name
-                   , selected <| model.currBreed == Just b
-                   ]
-                   [ text <| b.name ++ subBreedsTxt ]
-           )
-           model.allBreeds
-       )
-   , h3 [] [ text "Sub-Breeds:" ]
-   , ul []
-       (case model.currBreed of
-           Nothing ->
-               []
-
-           Just brd ->
-               L.map (\sb -> li [] [ text sb ]) brd.subBreeds
-       )
--}
 -- HTTP
 
 
