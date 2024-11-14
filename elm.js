@@ -6200,7 +6200,11 @@ var $author$project$Main$getBreeds = $elm$http$Http$get(
 		url: 'https://dog.ceo/api/breeds/list/all'
 	});
 var $author$project$Main$Loading = {$: 'Loading'};
-var $author$project$Main$loadingModel = {allBreeds: _List_Nil, detailBreed: $elm$core$Maybe$Nothing, state: $author$project$Main$Loading};
+var $author$project$Main$Model = F4(
+	function (state, allBreeds, detailBreed, clickedOn) {
+		return {allBreeds: allBreeds, clickedOn: clickedOn, detailBreed: detailBreed, state: state};
+	});
+var $author$project$Main$loadingModel = A4($author$project$Main$Model, $author$project$Main$Loading, _List_Nil, $elm$core$Maybe$Nothing, 'loading');
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2($author$project$Main$loadingModel, $author$project$Main$getBreeds);
 };
@@ -6209,80 +6213,35 @@ var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$Main$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
-var $author$project$Main$Model = F3(
-	function (state, allBreeds, detailBreed) {
-		return {allBreeds: allBreeds, detailBreed: detailBreed, state: state};
-	});
 var $author$project$Main$Success = {$: 'Success'};
 var $author$project$Main$Failure = {$: 'Failure'};
-var $author$project$Main$failureModel = {allBreeds: _List_Nil, detailBreed: $elm$core$Maybe$Nothing, state: $author$project$Main$Failure};
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $elm$core$List$head = function (list) {
-	if (list.b) {
-		var x = list.a;
-		var xs = list.b;
-		return $elm$core$Maybe$Just(x);
-	} else {
-		return $elm$core$Maybe$Nothing;
-	}
-};
+var $author$project$Main$failureModel = A4($author$project$Main$Model, $author$project$Main$Failure, _List_Nil, $elm$core$Maybe$Nothing, 'failure');
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
+			case 'GoDetails':
+				var str = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							clickedOn: A2($elm$core$Debug$log, 'go details', str)
+						}),
+					$elm$core$Platform$Cmd$none);
 			case 'Reload':
 				return _Utils_Tuple2($author$project$Main$loadingModel, $author$project$Main$getBreeds);
-			case 'GotBreeds':
+			default:
 				var result = msg.a;
 				if (result.$ === 'Ok') {
 					var breeds = result.a;
-					var _v2 = $elm$core$List$head(breeds);
-					if (_v2.$ === 'Just') {
-						var breed = _v2.a;
-						return _Utils_Tuple2(
-							A3(
-								$author$project$Main$Model,
-								$author$project$Main$Success,
-								breeds,
-								$elm$core$Maybe$Just(breed)),
-							$elm$core$Platform$Cmd$none);
-					} else {
-						return _Utils_Tuple2($author$project$Main$failureModel, $elm$core$Platform$Cmd$none);
-					}
-				} else {
-					return _Utils_Tuple2($author$project$Main$failureModel, $elm$core$Platform$Cmd$none);
-				}
-			default:
-				var breedName = msg.a;
-				var _v3 = $elm$core$List$head(
-					A2(
-						$elm$core$List$filter,
-						function (b) {
-							return A2($elm$core$String$startsWith, b.name, breedName);
-						},
-						model.allBreeds));
-				if (_v3.$ === 'Nothing') {
-					return _Utils_Tuple2($author$project$Main$failureModel, $elm$core$Platform$Cmd$none);
-				} else {
-					var breed = _v3.a;
 					return _Utils_Tuple2(
-						A3(
-							$author$project$Main$Model,
-							$author$project$Main$Success,
-							model.allBreeds,
-							$elm$core$Maybe$Just(breed)),
+						A4($author$project$Main$Model, $author$project$Main$Success, breeds, $elm$core$Maybe$Nothing, 'got breeds'),
 						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2($author$project$Main$failureModel, $elm$core$Platform$Cmd$none);
 				}
 		}
 	});
@@ -6292,6 +6251,9 @@ var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Main$GoDetails = function (a) {
+	return {$: 'GoDetails', a: a};
+};
 var $author$project$Main$Reload = {$: 'Reload'};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
@@ -6349,11 +6311,21 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $elm$html$Html$table = _VirtualDom_node('table');
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
 var $elm$html$Html$tbody = _VirtualDom_node('tbody');
 var $elm$html$Html$td = _VirtualDom_node('td');
 var $elm$html$Html$th = _VirtualDom_node('th');
 var $elm$html$Html$thead = _VirtualDom_node('thead');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$Main$viewBreeds = function (model) {
 	var _v0 = model.state;
 	switch (_v0.$) {
@@ -6445,7 +6417,12 @@ var $author$project$Main$viewBreeds = function (model) {
 															$elm$html$Html$td,
 															_List_fromArray(
 																[
-																	$elm$html$Html$Attributes$class('linkText')
+																	$elm$html$Html$Attributes$class('linkText'),
+																	$elm$html$Html$Attributes$value(b.name),
+																	A2(
+																	$elm$html$Html$Events$on,
+																	'click',
+																	A2($elm$json$Json$Decode$map, $author$project$Main$GoDetails, $elm$html$Html$Events$targetValue))
 																]),
 															_List_fromArray(
 																[

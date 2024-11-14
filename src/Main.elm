@@ -24,6 +24,7 @@ module Main exposing
     )
 
 import Browser
+import Browser.Events as BE
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -55,6 +56,7 @@ type alias Model =
     { state : AppState
     , allBreeds : List Breed
     , detailBreed : Maybe Breed
+    , clickedOn : String
     }
 
 
@@ -72,12 +74,15 @@ type alias Breed =
 
 loadingModel : Model
 loadingModel =
-    { state = Loading, allBreeds = [], detailBreed = Nothing }
+    Model Loading [] Nothing "loading"
 
 
 failureModel : Model
 failureModel =
-    { state = Failure, allBreeds = [], detailBreed = Nothing }
+    Model Failure
+        []
+        Nothing
+        "failure"
 
 
 init : () -> ( Model, Cmd Msg )
@@ -92,35 +97,25 @@ init _ =
 type Msg
     = Reload
     | GotBreeds (Result Http.Error (List Breed))
-    | SelectBreed String
+    | GoDetails String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GoDetails str ->
+            ( { model | clickedOn = Debug.log "go details" str }, Cmd.none )
+
         Reload ->
             ( loadingModel, getBreeds )
 
         GotBreeds result ->
             case result of
                 Ok breeds ->
-                    case head breeds of
-                        Just breed ->
-                            ( Model Success breeds (Just breed), Cmd.none )
-
-                        Nothing ->
-                            ( failureModel, Cmd.none )
+                    ( Model Success breeds Nothing "got breeds", Cmd.none )
 
                 Err _ ->
                     ( failureModel, Cmd.none )
-
-        SelectBreed breedName ->
-            case head <| L.filter (\b -> String.startsWith b.name breedName) model.allBreeds of
-                Nothing ->
-                    ( failureModel, Cmd.none )
-
-                Just breed ->
-                    ( Model Success model.allBreeds (Just breed), Cmd.none )
 
 
 
@@ -172,7 +167,15 @@ viewBreeds model =
                                             else
                                                 String.concat <| intersperse ", " b.subBreeds
                                     in
-                                    tr [] [ td [ class "linkText" ] [ text <| b.name ], td [] [ text subBreedsTxt ] ]
+                                    tr []
+                                        [ td
+                                            [ class "linkText"
+                                            , value b.name
+                                            , HE.on "click" <| D.map GoDetails HE.targetValue
+                                            ]
+                                            [ text <| b.name ]
+                                        , td [] [ text subBreedsTxt ]
+                                        ]
                                 )
                                 model.allBreeds
                             )
