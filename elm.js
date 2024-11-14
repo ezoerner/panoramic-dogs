@@ -6456,7 +6456,7 @@ var $author$project$Main$viewBreeds = function (model) {
 															$elm$html$Html$td,
 															_List_fromArray(
 																[
-																	$elm$html$Html$Attributes$class('breedText')
+																	$elm$html$Html$Attributes$class('linkText')
 																]),
 															_List_fromArray(
 																[
@@ -6491,7 +6491,7 @@ var $author$project$Main$view = function (model) {
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Dog Breed List')
+						$elm$html$Html$text('Dog Breeds')
 					])),
 				$author$project$Main$viewBreeds(model)
 			]));

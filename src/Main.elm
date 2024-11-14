@@ -139,7 +139,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div [ style "margin-left" "20px" ]
-        [ h2 [] [ text "Dog Breed List" ]
+        [ h2 [] [ text "Dog Breeds" ]
         , viewBreeds model
         ]
 
@@ -173,7 +173,7 @@ viewBreeds model =
                                             else
                                                 String.concat <| intersperse ", " b.subBreeds
                                     in
-                                    tr [] [ td [ class "breedText" ] [ text <| b.name ], td [] [ text subBreedsTxt ] ]
+                                    tr [] [ td [ class "linkText" ] [ text <| b.name ], td [] [ text subBreedsTxt ] ]
                                 )
                                 model.allBreeds
                             )

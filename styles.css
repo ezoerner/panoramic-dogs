@@ -28,7 +28,7 @@ tr:nth-child(even) {
   width: 150px;
 }
 
-.breedText {
+.linkText {
   color: blue;
   text-decoration: underline;
   cursor: pointer;
