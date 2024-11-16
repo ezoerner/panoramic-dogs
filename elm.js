@@ -5488,35 +5488,22 @@ var $elm$core$Dict$map = F2(
 				A2($elm$core$Dict$map, func, right));
 		}
 	});
+var $author$project$Main$Breed = F3(
+	function (name, subBreeds, imageUrls) {
+		return {imageUrls: imageUrls, name: name, subBreeds: subBreeds};
+	});
+var $author$project$Main$mkBreed = F2(
+	function (name, subBreeds) {
+		return A3($author$project$Main$Breed, name, subBreeds, $elm$core$Array$empty);
+	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Main$Breed = F2(
-	function (name, subBreeds) {
-		return {name: name, subBreeds: subBreeds};
-	});
-var $author$project$Main$subBreedsToBreed = F2(
-	function (name, subBreeds) {
-		return A2($author$project$Main$Breed, name, subBreeds);
-	});
-var $elm$core$Dict$values = function (dict) {
-	return A3(
-		$elm$core$Dict$foldr,
-		F3(
-			function (key, value, valueList) {
-				return A2($elm$core$List$cons, value, valueList);
-			}),
-		_List_Nil,
-		dict);
-};
 var $author$project$Main$breedsDecoder = function () {
 	var breedsDictDecoder = A2(
 		$elm$json$Json$Decode$map,
-		$elm$core$Dict$map($author$project$Main$subBreedsToBreed),
+		$elm$core$Dict$map($author$project$Main$mkBreed),
 		$elm$json$Json$Decode$dict(
 			$elm$json$Json$Decode$list($elm$json$Json$Decode$string)));
-	return A2(
-		$elm$json$Json$Decode$field,
-		'message',
-		A2($elm$json$Json$Decode$map, $elm$core$Dict$values, breedsDictDecoder));
+	return A2($elm$json$Json$Decode$field, 'message', breedsDictDecoder);
 }();
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $elm$http$Http$BadStatus_ = F2(
@@ -6021,6 +6008,7 @@ var $elm$http$Http$expectJson = F2(
 						A2($elm$json$Json$Decode$decodeString, decoder, string));
 				}));
 	});
+var $author$project$Main$fetchAllBreedsUrl = 'https://dog.ceo/api/breeds/list/all';
 var $elm$http$Http$emptyBody = _Http_emptyBody;
 var $elm$http$Http$Request = function (a) {
 	return {$: 'Request', a: a};
@@ -6197,56 +6185,242 @@ var $elm$http$Http$get = function (r) {
 var $author$project$Main$getBreeds = $elm$http$Http$get(
 	{
 		expect: A2($elm$http$Http$expectJson, $author$project$Main$GotBreeds, $author$project$Main$breedsDecoder),
-		url: 'https://dog.ceo/api/breeds/list/all'
+		url: $author$project$Main$fetchAllBreedsUrl
 	});
 var $author$project$Main$Loading = {$: 'Loading'};
 var $author$project$Main$Model = F4(
-	function (state, allBreeds, detailBreed, clickedOn) {
-		return {allBreeds: allBreeds, clickedOn: clickedOn, detailBreed: detailBreed, state: state};
+	function (state, allBreeds, detailBreed, pageStartIdx) {
+		return {allBreeds: allBreeds, detailBreed: detailBreed, pageStartIdx: pageStartIdx, state: state};
 	});
-var $author$project$Main$loadingModel = A4($author$project$Main$Model, $author$project$Main$Loading, _List_Nil, $elm$core$Maybe$Nothing, 'loading');
+var $author$project$Main$loadingModel = A4($author$project$Main$Model, $author$project$Main$Loading, $elm$core$Dict$empty, $elm$core$Maybe$Nothing, 0);
 var $author$project$Main$init = function (_v0) {
 	return _Utils_Tuple2($author$project$Main$loadingModel, $author$project$Main$getBreeds);
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Main$subscriptions = function (model) {
-	return $elm$core$Platform$Sub$none;
-};
 var $author$project$Main$Success = {$: 'Success'};
-var $author$project$Main$Failure = {$: 'Failure'};
-var $author$project$Main$failureModel = A4($author$project$Main$Model, $author$project$Main$Failure, _List_Nil, $elm$core$Maybe$Nothing, 'failure');
+var $author$project$Main$Failure = function (a) {
+	return {$: 'Failure', a: a};
+};
+var $author$project$Main$failureModel = function (errMsg) {
+	return A4(
+		$author$project$Main$Model,
+		$author$project$Main$Failure(errMsg),
+		$elm$core$Dict$empty,
+		$elm$core$Maybe$Nothing,
+		0);
+};
+var $author$project$Main$GotImageUrls = function (a) {
+	return {$: 'GotImageUrls', a: a};
+};
+var $author$project$Main$fetchImageUrls = function (breedName) {
+	return 'https://dog.ceo/api/breed/' + (breedName + '/images');
+};
+var $elm$core$Array$fromListHelp = F3(
+	function (list, nodeList, nodeListSize) {
+		fromListHelp:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, list);
+			var jsArray = _v0.a;
+			var remainingItems = _v0.b;
+			if (_Utils_cmp(
+				$elm$core$Elm$JsArray$length(jsArray),
+				$elm$core$Array$branchFactor) < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					true,
+					{nodeList: nodeList, nodeListSize: nodeListSize, tail: jsArray});
+			} else {
+				var $temp$list = remainingItems,
+					$temp$nodeList = A2(
+					$elm$core$List$cons,
+					$elm$core$Array$Leaf(jsArray),
+					nodeList),
+					$temp$nodeListSize = nodeListSize + 1;
+				list = $temp$list;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue fromListHelp;
+			}
+		}
+	});
+var $elm$core$Array$fromList = function (list) {
+	if (!list.b) {
+		return $elm$core$Array$empty;
+	} else {
+		return A3($elm$core$Array$fromListHelp, list, _List_Nil, 0);
+	}
+};
+var $author$project$Main$imageUrlsDecoder = A2(
+	$elm$json$Json$Decode$field,
+	'message',
+	A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Array$fromList,
+		$elm$json$Json$Decode$list($elm$json$Json$Decode$string)));
+var $author$project$Main$getImageUrls = function (breedName) {
+	return $elm$http$Http$get(
+		{
+			expect: A2($elm$http$Http$expectJson, $author$project$Main$GotImageUrls, $author$project$Main$imageUrlsDecoder),
+			url: $author$project$Main$fetchImageUrls(breedName)
+		});
+};
+var $elm$core$Array$isEmpty = function (_v0) {
+	var len = _v0.a;
+	return !len;
+};
 var $elm$core$Debug$log = _Debug_log;
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $elm_community$maybe_extra$Maybe$Extra$unwrap = F3(
+	function (_default, f, m) {
+		if (m.$ === 'Nothing') {
+			return _default;
+		} else {
+			var a = m.a;
+			return f(a);
+		}
+	});
+var $author$project$Main$updateAllBreeds = F2(
+	function (newBreedMay, allBreeds) {
+		if (newBreedMay.$ === 'Nothing') {
+			return allBreeds;
+		} else {
+			var newBreed = newBreedMay.a;
+			return A3($elm$core$Dict$insert, newBreed.name, newBreed, allBreeds);
+		}
+	});
 var $author$project$Main$update = F2(
 	function (msg, model) {
 		switch (msg.$) {
 			case 'GoDetails':
 				var str = msg.a;
+				var foundDetailBreedMay = A2($elm$core$Dict$get, str, model.allBreeds);
+				var needToFetchImageUrls = _Utils_eq(
+					A2(
+						$elm$core$Maybe$map,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.imageUrls;
+							},
+							$elm$core$Array$isEmpty),
+						foundDetailBreedMay),
+					$elm$core$Maybe$Just(true));
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
 						{
-							clickedOn: A2($elm$core$Debug$log, 'go details', str)
+							detailBreed: foundDetailBreedMay,
+							state: needToFetchImageUrls ? $author$project$Main$Loading : model.state
 						}),
-					$elm$core$Platform$Cmd$none);
+					needToFetchImageUrls ? A3(
+						$elm_community$maybe_extra$Maybe$Extra$unwrap,
+						$elm$core$Platform$Cmd$none,
+						function (breed) {
+							return $author$project$Main$getImageUrls(breed.name);
+						},
+						foundDetailBreedMay) : $elm$core$Platform$Cmd$none);
 			case 'Reload':
 				return _Utils_Tuple2($author$project$Main$loadingModel, $author$project$Main$getBreeds);
-			default:
+			case 'GotBreeds':
 				var result = msg.a;
 				if (result.$ === 'Ok') {
 					var breeds = result.a;
 					return _Utils_Tuple2(
-						A4($author$project$Main$Model, $author$project$Main$Success, breeds, $elm$core$Maybe$Nothing, 'got breeds'),
+						A4(
+							$author$project$Main$Model,
+							$author$project$Main$Success,
+							A2($elm$core$Debug$log, 'got breeds', breeds),
+							$elm$core$Maybe$Nothing,
+							0),
 						$elm$core$Platform$Cmd$none);
 				} else {
-					return _Utils_Tuple2($author$project$Main$failureModel, $elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(
+						$author$project$Main$failureModel('Unable to load the breeds.'),
+						$elm$core$Platform$Cmd$none);
+				}
+			case 'ReturnToBreedsList':
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{detailBreed: $elm$core$Maybe$Nothing}),
+					$elm$core$Platform$Cmd$none);
+			default:
+				var result = msg.a;
+				if (result.$ === 'Ok') {
+					var urls = result.a;
+					var newBreedMay = A2(
+						$elm$core$Maybe$map,
+						function (b) {
+							return _Utils_update(
+								b,
+								{
+									imageUrls: A2($elm$core$Debug$log, 'got image urls', urls)
+								});
+						},
+						model.detailBreed);
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{
+								allBreeds: A2($author$project$Main$updateAllBreeds, newBreedMay, model.allBreeds),
+								detailBreed: newBreedMay,
+								state: $author$project$Main$Success
+							}),
+						$elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(
+						$author$project$Main$failureModel(
+							'Unable to load the images for ' + A3(
+								$elm_community$maybe_extra$Maybe$Extra$unwrap,
+								'(unknown)',
+								function (brd) {
+									return brd.name;
+								},
+								model.detailBreed)),
+						$elm$core$Platform$Cmd$none);
 				}
 		}
 	});
+var $author$project$Main$Reload = {$: 'Reload'};
+var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
+	if (m.$ === 'Nothing') {
+		return false;
+	} else {
+		return true;
+	}
+};
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -6254,8 +6428,6 @@ var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Main$GoDetails = function (a) {
 	return {$: 'GoDetails', a: a};
 };
-var $author$project$Main$Reload = {$: 'Reload'};
-var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6293,23 +6465,7 @@ var $elm$core$List$isEmpty = function (xs) {
 		return false;
 	}
 };
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
+var $elm$core$List$sortBy = _List_sortBy;
 var $elm$html$Html$table = _VirtualDom_node('table');
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
@@ -6326,16 +6482,349 @@ var $elm$html$Html$th = _VirtualDom_node('th');
 var $elm$html$Html$thead = _VirtualDom_node('thead');
 var $elm$html$Html$tr = _VirtualDom_node('tr');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
 var $author$project$Main$viewBreeds = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('breedTableDiv')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$table,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$thead,
+								_List_Nil,
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$tr,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												$elm$html$Html$th,
+												_List_fromArray(
+													[
+														$elm$html$Html$Attributes$class('breedCol')
+													]),
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Breed')
+													])),
+												A2(
+												$elm$html$Html$th,
+												_List_Nil,
+												_List_fromArray(
+													[
+														$elm$html$Html$text('Sub-Breeds')
+													]))
+											]))
+									])),
+								A2(
+								$elm$html$Html$tbody,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('breedTBody')
+									]),
+								A2(
+									$elm$core$List$map,
+									function (b) {
+										var subBreedsTxt = $elm$core$List$isEmpty(b.subBreeds) ? '' : $elm$core$String$concat(
+											A2($elm$core$List$intersperse, ', ', b.subBreeds));
+										return A2(
+											$elm$html$Html$tr,
+											_List_Nil,
+											_List_fromArray(
+												[
+													A2(
+													$elm$html$Html$td,
+													_List_fromArray(
+														[
+															$elm$html$Html$Attributes$class('linkText'),
+															$elm$html$Html$Attributes$value(b.name),
+															A2(
+															$elm$html$Html$Events$on,
+															'click',
+															A2($elm$json$Json$Decode$map, $author$project$Main$GoDetails, $elm$html$Html$Events$targetValue))
+														]),
+													_List_fromArray(
+														[
+															$elm$html$Html$text(b.name)
+														])),
+													A2(
+													$elm$html$Html$td,
+													_List_Nil,
+													_List_fromArray(
+														[
+															$elm$html$Html$text(subBreedsTxt)
+														]))
+												]));
+									},
+									A2(
+										$elm$core$List$sortBy,
+										function ($) {
+											return $.name;
+										},
+										$elm$core$Dict$values(model.allBreeds))))
+							]))
+					]))
+			]));
+};
+var $author$project$Main$ReturnToBreedsList = {$: 'ReturnToBreedsList'};
+var $elm$html$Html$br = _VirtualDom_node('br');
+var $elm$html$Html$Attributes$alt = $elm$html$Html$Attributes$stringProperty('alt');
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$Main$getImagePage = function (urls) {
+	return A2(
+		$elm$core$List$map,
+		function (url) {
+			return A2(
+				$elm$html$Html$img,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$src(url),
+						$elm$html$Html$Attributes$alt('image not loaded: ' + url)
+					]),
+				_List_Nil);
+		},
+		A2(
+			$elm$core$List$take,
+			20,
+			$elm$core$Array$toList(urls)));
+};
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $elm$core$Array$length = function (_v0) {
+	var len = _v0.a;
+	return len;
+};
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Main$viewDetails = function (model) {
+	var numImages = $elm$core$Array$length(
+		A2(
+			$elm$core$Maybe$withDefault,
+			$elm$core$Array$empty,
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.imageUrls;
+				},
+				model.detailBreed)));
+	var lastIdxStr = $elm$core$String$fromInt(
+		A2($elm$core$Basics$min, numImages, model.pageStartIdx + 20));
+	var firstIdxStr = $elm$core$String$fromInt(model.pageStartIdx + 1);
+	return A2(
+		$elm$html$Html$div,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick($author$project$Main$ReturnToBreedsList)
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('⬅︎ Return to Dog Breeds List')
+					])),
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_Utils_ap(
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							'Displaying ' + (firstIdxStr + ('-' + (lastIdxStr + (' of ' + ($elm$core$String$fromInt(numImages) + ' images')))))),
+							A2($elm$html$Html$br, _List_Nil, _List_Nil),
+							A2($elm$html$Html$br, _List_Nil, _List_Nil)
+						]),
+					$author$project$Main$getImagePage(
+						A2(
+							$elm$core$Maybe$withDefault,
+							$elm$core$Array$empty,
+							A2(
+								$elm$core$Maybe$map,
+								function ($) {
+									return $.imageUrls;
+								},
+								model.detailBreed)))))
+			]));
+};
+var $author$project$Main$view = function (model) {
 	var _v0 = model.state;
 	switch (_v0.$) {
 		case 'Failure':
+			var errMsg = _v0.a;
 			return A2(
 				$elm$html$Html$div,
 				_List_Nil,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('I could not load the breeds for some reason. '),
+						$elm$html$Html$text(errMsg),
 						A2(
 						$elm$html$Html$button,
 						_List_fromArray(
@@ -6350,119 +6839,40 @@ var $author$project$Main$viewBreeds = function (model) {
 		case 'Loading':
 			return $elm$html$Html$text('Loading...');
 		default:
+			var header = A3(
+				$elm_community$maybe_extra$Maybe$Extra$unwrap,
+				'Dog Breeds',
+				function (s) {
+					return 'Details for ' + s.name;
+				},
+				model.detailBreed);
 			return A2(
 				$elm$html$Html$div,
-				_List_Nil,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'margin-left', '20px')
+					]),
 				_List_fromArray(
 					[
 						A2(
-						$elm$html$Html$div,
+						$elm$html$Html$h2,
+						_List_Nil,
 						_List_fromArray(
 							[
-								$elm$html$Html$Attributes$class('breedTableDiv')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$table,
-								_List_Nil,
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$thead,
-										_List_Nil,
-										_List_fromArray(
-											[
-												A2(
-												$elm$html$Html$tr,
-												_List_Nil,
-												_List_fromArray(
-													[
-														A2(
-														$elm$html$Html$th,
-														_List_fromArray(
-															[
-																$elm$html$Html$Attributes$class('breedCol')
-															]),
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Breed')
-															])),
-														A2(
-														$elm$html$Html$th,
-														_List_Nil,
-														_List_fromArray(
-															[
-																$elm$html$Html$text('Sub-Breeds')
-															]))
-													]))
-											])),
-										A2(
-										$elm$html$Html$tbody,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('breedTBody')
-											]),
-										A2(
-											$elm$core$List$map,
-											function (b) {
-												var subBreedsTxt = $elm$core$List$isEmpty(b.subBreeds) ? '' : $elm$core$String$concat(
-													A2($elm$core$List$intersperse, ', ', b.subBreeds));
-												return A2(
-													$elm$html$Html$tr,
-													_List_Nil,
-													_List_fromArray(
-														[
-															A2(
-															$elm$html$Html$td,
-															_List_fromArray(
-																[
-																	$elm$html$Html$Attributes$class('linkText'),
-																	$elm$html$Html$Attributes$value(b.name),
-																	A2(
-																	$elm$html$Html$Events$on,
-																	'click',
-																	A2($elm$json$Json$Decode$map, $author$project$Main$GoDetails, $elm$html$Html$Events$targetValue))
-																]),
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(b.name)
-																])),
-															A2(
-															$elm$html$Html$td,
-															_List_Nil,
-															_List_fromArray(
-																[
-																	$elm$html$Html$text(subBreedsTxt)
-																]))
-														]));
-											},
-											model.allBreeds))
-									]))
-							]))
+								$elm$html$Html$text(header)
+							])),
+						$elm_community$maybe_extra$Maybe$Extra$isJust(model.detailBreed) ? $author$project$Main$viewDetails(model) : $author$project$Main$viewBreeds(model)
 					]));
 	}
 };
-var $author$project$Main$view = function (model) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				A2($elm$html$Html$Attributes$style, 'margin-left', '20px')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$h2,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Dog Breeds')
-					])),
-				$author$project$Main$viewBreeds(model)
-			]));
-};
 var $author$project$Main$main = $elm$browser$Browser$element(
-	{init: $author$project$Main$init, subscriptions: $author$project$Main$subscriptions, update: $author$project$Main$update, view: $author$project$Main$view});
+	{
+		init: $author$project$Main$init,
+		subscriptions: function (_v0) {
+			return $elm$core$Platform$Sub$none;
+		},
+		update: $author$project$Main$update,
+		view: $author$project$Main$view
+	});
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	$elm$json$Json$Decode$succeed(_Utils_Tuple0))(0)}});}(this));
