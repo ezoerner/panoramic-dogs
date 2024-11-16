@@ -6394,6 +6394,8 @@ var $author$project$Main$update = F2(
 		}
 	});
 var $author$project$Main$Reload = {$: 'Reload'};
+var $elm$html$Html$b = _VirtualDom_node('b');
+var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$div = _VirtualDom_node('div');
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
@@ -6591,7 +6593,6 @@ var $author$project$Main$viewBreeds = function (model) {
 			]));
 };
 var $author$project$Main$ReturnToBreedsList = {$: 'ReturnToBreedsList'};
-var $elm$html$Html$br = _VirtualDom_node('br');
 var $elm$html$Html$Attributes$alt = $elm$html$Html$Attributes$stringProperty('alt');
 var $elm$html$Html$img = _VirtualDom_node('img');
 var $elm$html$Html$Attributes$src = function (url) {
@@ -6815,55 +6816,66 @@ var $author$project$Main$viewDetails = function (model) {
 			]));
 };
 var $author$project$Main$view = function (model) {
-	var _v0 = model.state;
-	switch (_v0.$) {
-		case 'Failure':
-			var errMsg = _v0.a;
-			return A2(
-				$elm$html$Html$div,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(errMsg),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Main$Reload)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Try Again!')
-							]))
-					]));
-		case 'Loading':
-			return $elm$html$Html$text('Loading...');
-		default:
-			var header = A3(
-				$elm_community$maybe_extra$Maybe$Extra$unwrap,
-				'Dog Breeds',
-				function (s) {
-					return 'Details for ' + s.name;
-				},
-				model.detailBreed);
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						A2($elm$html$Html$Attributes$style, 'margin-left', '20px')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h2,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text(header)
-							])),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.detailBreed) ? $author$project$Main$viewDetails(model) : $author$project$Main$viewBreeds(model)
-					]));
-	}
+	var headerHtml = A2(
+		$elm$html$Html$h2,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$elm$html$Html$text(
+				A3(
+					$elm_community$maybe_extra$Maybe$Extra$unwrap,
+					'Dog Breeds',
+					function ($) {
+						return $.name;
+					},
+					model.detailBreed))
+			]));
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'margin-left', '20px')
+			]),
+		_List_fromArray(
+			[
+				headerHtml,
+				function () {
+				var _v0 = model.state;
+				switch (_v0.$) {
+					case 'Failure':
+						var errMsg = _v0.a;
+						return A2(
+							$elm$html$Html$div,
+							_List_Nil,
+							_List_fromArray(
+								[
+									$elm$html$Html$text(errMsg),
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									A2($elm$html$Html$br, _List_Nil, _List_Nil),
+									A2(
+									$elm$html$Html$button,
+									_List_fromArray(
+										[
+											$elm$html$Html$Events$onClick($author$project$Main$Reload)
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$b,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Try Again')
+												]))
+										]))
+								]));
+					case 'Loading':
+						return $elm$html$Html$text('Loading...');
+					default:
+						return $elm_community$maybe_extra$Maybe$Extra$isJust(model.detailBreed) ? $author$project$Main$viewDetails(model) : $author$project$Main$viewBreeds(model);
+				}
+			}()
+			]));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{

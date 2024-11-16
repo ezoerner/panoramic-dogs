@@ -185,29 +185,31 @@ updateAllBreeds newBreedMay allBreeds =
 
 view : Model -> Html Msg
 view model =
-    case model.state of
-        Failure errMsg ->
-            div []
-                [ text errMsg
-                , button [ HE.onClick Reload ] [ text "Try Again!" ]
-                ]
+    let
+        headerHtml =
+            h2 [] [ text <| MX.unwrap "Dog Breeds" .name model.detailBreed ]
+    in
+    div [ style "margin-left" "20px" ]
+        [ headerHtml
+        , case model.state of
+            Failure errMsg ->
+                div []
+                    [ text errMsg
+                    , br [] []
+                    , br [] []
+                    , button [ HE.onClick Reload ] [ b [] [ text "Try Again" ] ]
+                    ]
 
-        Loading ->
-            text "Loading..."
+            Loading ->
+                text "Loading..."
 
-        Success ->
-            let
-                header =
-                    MX.unwrap "Dog Breeds" (\s -> "Details for " ++ s.name) model.detailBreed
-            in
-            div [ style "margin-left" "20px" ]
-                [ h2 [] [ text header ]
-                , if MX.isJust model.detailBreed then
+            Success ->
+                if MX.isJust model.detailBreed then
                     viewDetails model
 
-                  else
+                else
                     viewBreeds model
-                ]
+        ]
 
 
 viewBreeds : Model -> Html Msg

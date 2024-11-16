@@ -20,8 +20,8 @@ tr:nth-child(even) {
 .breedTableDiv {
   height: 500px;
   overflow: auto;
-  margin: auto;
-  width: 75%;
+  /* margin: auto; */
+  width: 90%;
 }
 
 .breedCol {
@@ -35,6 +35,6 @@ tr:nth-child(even) {
 }
 
 img {
-  max-width: 200px;
+  max-width: 150px;
   height: auto;
 }
