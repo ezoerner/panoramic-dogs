@@ -18,10 +18,10 @@ tr:nth-child(even) {
 }
 
 .breedTableDiv {
-  height: 500px;
+  height: 650px;
   overflow: auto;
   /* margin: auto; */
-  width: 90%;
+  width: 95%;
 }
 
 .breedCol {
@@ -35,6 +35,34 @@ tr:nth-child(even) {
 }
 
 img {
-  max-width: 150px;
+  max-width: 200px;
   height: auto;
+}
+
+
+button {
+  text-decoration: none;
+  padding: 8px 16px;
+  font-size: 14pt;
+}
+
+button:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.previous {
+  background-color: #f1f1f1;
+  color: black;
+}
+
+.next {
+  background-color: #04AA6D;
+  color: white;
+}
+
+button:disabled,
+button[disabled] {
+  opacity: 0.3;
+  cursor: not-allowed;
 }

@@ -31,6 +31,7 @@ import Http
 import Json.Decode as D exposing (Decoder)
 import List as L exposing (..)
 import Maybe.Extra as MX
+import String as S exposing (String)
 
 
 fetchAllBreedsUrl : String
@@ -41,6 +42,11 @@ fetchAllBreedsUrl =
 fetchImageUrls : String -> String
 fetchImageUrls breedName =
     "https://dog.ceo/api/breed/" ++ breedName ++ "/images"
+
+
+numImagesPerPage : Int
+numImagesPerPage =
+    20
 
 
 
@@ -107,6 +113,8 @@ type Msg
     | GoDetails String
     | ReturnToBreedsList
     | GotImageUrls (Result Http.Error (Array String))
+    | NextPage
+    | PrevPage
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -149,7 +157,7 @@ update msg model =
                     ( failureModel "Unable to load the breeds.", Cmd.none )
 
         ReturnToBreedsList ->
-            ( { model | detailBreed = Nothing }, Cmd.none )
+            ( { model | detailBreed = Nothing, pageStartIdx = 0 }, Cmd.none )
 
         GotImageUrls result ->
             case result of
@@ -167,6 +175,12 @@ update msg model =
                             ++ MX.unwrap "(unknown)" (\brd -> brd.name) model.detailBreed
                     , Cmd.none
                     )
+
+        NextPage ->
+            ( { model | pageStartIdx = model.pageStartIdx + numImagesPerPage }, Cmd.none )
+
+        PrevPage ->
+            ( { model | pageStartIdx = model.pageStartIdx - numImagesPerPage }, Cmd.none )
 
 
 updateAllBreeds : Maybe Breed -> Dict String Breed -> Dict String Breed
@@ -227,7 +241,7 @@ viewBreeds model =
                                         ""
 
                                     else
-                                        String.concat <| intersperse ", " b.subBreeds
+                                        S.concat <| intersperse ", " b.subBreeds
                             in
                             tr []
                                 [ td
@@ -252,45 +266,78 @@ viewDetails : Model -> Html Msg
 viewDetails model =
     let
         numImages =
-            A.length (Maybe.withDefault A.empty <| Maybe.map .imageUrls model.detailBreed)
+            A.length
+                (Maybe.withDefault A.empty <|
+                    Maybe.map .imageUrls model.detailBreed
+                )
 
-        firstIdxStr =
-            String.fromInt (model.pageStartIdx + 1)
+        firstIdx =
+            model.pageStartIdx + 1
 
-        lastIdxStr =
-            String.fromInt <| Basics.min numImages <| model.pageStartIdx + 20
+        lastIdx =
+            Basics.min numImages <| model.pageStartIdx + numImagesPerPage
     in
     div []
-        [ button [ HE.onClick ReturnToBreedsList ] [ text "⬅︎ Return to Dog Breeds List" ]
+        [ button [ HE.onClick ReturnToBreedsList ] [ text "<<< Return to Dog Breeds List" ]
+        , hr [] []
         , h3 []
-            ([ text <|
+            [ text <|
                 "Displaying "
-                    ++ firstIdxStr
+                    ++ S.fromInt firstIdx
                     ++ "-"
-                    ++ lastIdxStr
+                    ++ S.fromInt lastIdx
                     ++ " of "
-                    ++ String.fromInt numImages
+                    ++ S.fromInt numImages
                     ++ " images"
-             , br [] []
-             , br [] []
-             ]
-                ++ getImagePage (Maybe.withDefault A.empty <| Maybe.map .imageUrls model.detailBreed)
-            )
+            ]
+        , br [] []
+        , br [] []
+        , pagingButtons firstIdx lastIdx numImages
+        , imagePage
+            firstIdx
+            lastIdx
+            (Maybe.withDefault A.empty <| Maybe.map .imageUrls model.detailBreed)
         ]
 
 
-getImagePage : Array String -> List (Html msg)
-getImagePage urls =
-    L.map
-        (\url ->
-            img
-                [ src url
-                , alt <| "image not loaded: " ++ url
-                ]
-                []
-        )
-    <|
-        take 20 (A.toList urls)
+pagingButtons : Int -> Int -> Int -> Html Msg
+pagingButtons firstIdx lastIdx numImages =
+    let
+        shouldDisplayPaging =
+            numImages > numImagesPerPage
+
+        prevDisabled =
+            firstIdx == 1
+
+        nextDisabled =
+            lastIdx == numImages
+    in
+    div [] <|
+        if shouldDisplayPaging then
+            [ button [ class "previous", disabled prevDisabled, HE.onClick PrevPage ] [ text "« Previous" ]
+            , button [ class "next", disabled nextDisabled, HE.onClick NextPage ] [ text "Next »" ]
+            , br [] []
+            , br [] []
+            ]
+
+        else
+            []
+
+
+imagePage : Int -> Int -> Array String -> Html Msg
+imagePage firstIdx lastIdx urls =
+    div [] <|
+        L.map
+            (\url ->
+                img
+                    [ src url
+                    , alt <| "image not loaded: " ++ url
+                    ]
+                    []
+            )
+        <|
+            A.toList <|
+                A.slice (firstIdx - 1) lastIdx urls
 
 
 
