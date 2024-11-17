@@ -55,7 +55,7 @@ update msg model =
                 Ok urls ->
                     let
                         newBreedMay =
-                            Maybe.map (\b -> { b | imageUrls = Debug.log "got image urls" urls }) model.detailBreed
+                            Maybe.map (\b -> { b | imageUrls = urls }) model.detailBreed
                     in
                     ( { model | state = Model.Success, detailBreed = newBreedMay, allBreeds = updateAllBreeds newBreedMay model.allBreeds }, Cmd.none )
 
