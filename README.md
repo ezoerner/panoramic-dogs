@@ -1,5 +1,7 @@
 # panoramic-dogs
 
+A web application using the [Dog API from Dog CEO Zine](https://dog.ceo/dog-api/).
+
 ## Run
 Open `index.html` in a browser.
 
