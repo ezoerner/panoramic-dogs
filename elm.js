@@ -6376,12 +6376,7 @@ var $author$project$Update$update = F2(
 				if (result.$ === 'Ok') {
 					var breeds = result.a;
 					return _Utils_Tuple2(
-						A4(
-							$author$project$Model$Model,
-							$author$project$Model$Success,
-							A2($elm$core$Debug$log, 'got breeds', breeds),
-							$elm$core$Maybe$Nothing,
-							0),
+						A4($author$project$Model$Model, $author$project$Model$Success, breeds, $elm$core$Maybe$Nothing, 0),
 						$elm$core$Platform$Cmd$none);
 				} else {
 					return _Utils_Tuple2(
@@ -6545,6 +6540,47 @@ var $elm$core$Dict$values = function (dict) {
 		dict);
 };
 var $author$project$View$viewBreeds = function (model) {
+	var subBreedsText = function (breed) {
+		return $elm$core$List$isEmpty(breed.subBreeds) ? '' : $elm$core$String$concat(
+			A2($elm$core$List$intersperse, ', ', breed.subBreeds));
+	};
+	var sortedBreeds = A2(
+		$elm$core$List$sortBy,
+		function ($) {
+			return $.name;
+		},
+		$elm$core$Dict$values(model.allBreeds));
+	var mkRow = function (breed) {
+		return A2(
+			$elm$html$Html$tr,
+			_List_Nil,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$td,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('linkText'),
+							$elm$html$Html$Attributes$value(breed.name),
+							A2(
+							$elm$html$Html$Events$on,
+							'click',
+							A2($elm$json$Json$Decode$map, $author$project$Common$GoDetails, $elm$html$Html$Events$targetValue))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(breed.name)
+						])),
+					A2(
+					$elm$html$Html$td,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							subBreedsText(breed))
+						]))
+				]));
+	};
 	return A2(
 		$elm$html$Html$div,
 		_List_Nil,
@@ -6598,46 +6634,7 @@ var $author$project$View$viewBreeds = function (model) {
 									[
 										$elm$html$Html$Attributes$class('breedTBody')
 									]),
-								A2(
-									$elm$core$List$map,
-									function (b) {
-										var subBreedsTxt = $elm$core$List$isEmpty(b.subBreeds) ? '' : $elm$core$String$concat(
-											A2($elm$core$List$intersperse, ', ', b.subBreeds));
-										return A2(
-											$elm$html$Html$tr,
-											_List_Nil,
-											_List_fromArray(
-												[
-													A2(
-													$elm$html$Html$td,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$class('linkText'),
-															$elm$html$Html$Attributes$value(b.name),
-															A2(
-															$elm$html$Html$Events$on,
-															'click',
-															A2($elm$json$Json$Decode$map, $author$project$Common$GoDetails, $elm$html$Html$Events$targetValue))
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text(b.name)
-														])),
-													A2(
-													$elm$html$Html$td,
-													_List_Nil,
-													_List_fromArray(
-														[
-															$elm$html$Html$text(subBreedsTxt)
-														]))
-												]));
-									},
-									A2(
-										$elm$core$List$sortBy,
-										function ($) {
-											return $.name;
-										},
-										$elm$core$Dict$values(model.allBreeds))))
+								A2($elm$core$List$map, mkRow, sortedBreeds))
 							]))
 					]))
 			]));
@@ -6888,21 +6885,22 @@ var $elm$html$Html$Attributes$src = function (url) {
 };
 var $author$project$View$imagePage = F3(
 	function (firstIdx, lastIdx, urls) {
+		var mkImg = function (url) {
+			return A2(
+				$elm$html$Html$img,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$src(url),
+						$elm$html$Html$Attributes$alt('image not loaded: ' + url)
+					]),
+				_List_Nil);
+		};
 		return A2(
 			$elm$html$Html$div,
 			_List_Nil,
 			A2(
 				$elm$core$List$map,
-				function (url) {
-					return A2(
-						$elm$html$Html$img,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$src(url),
-								$elm$html$Html$Attributes$alt('image not loaded: ' + url)
-							]),
-						_List_Nil);
-				},
+				mkImg,
 				$elm$core$Array$toList(
 					A3($elm$core$Array$slice, firstIdx - 1, lastIdx, urls))));
 	});

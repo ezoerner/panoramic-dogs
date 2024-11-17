@@ -1,7 +1,7 @@
 module View exposing (..)
 
 import Array as A exposing (Array)
-import Common
+import Common exposing (..)
 import Dict
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -13,7 +13,7 @@ import Model exposing (Model)
 import String as S
 
 
-view : Model -> Html Common.Msg
+view : Model -> Html Msg
 view model =
     let
         headerHtml =
@@ -27,7 +27,7 @@ view model =
                     [ text errMsg
                     , br [] []
                     , br [] []
-                    , button [ HE.onClick Common.Reload ] [ b [] [ text "Try Again" ] ]
+                    , button [ HE.onClick Reload ] [ b [] [ text "Try Again" ] ]
                     ]
 
             Model.Loading ->
@@ -42,43 +42,47 @@ view model =
         ]
 
 
-viewBreeds : Model -> Html Common.Msg
+viewBreeds : Model -> Html Msg
 viewBreeds model =
+    let
+        sortedBreeds =
+            L.sortBy .name <| Dict.values model.allBreeds
+
+        subBreedsText breed =
+            if L.isEmpty breed.subBreeds then
+                ""
+
+            else
+                S.concat <| L.intersperse ", " breed.subBreeds
+
+        mkRow breed =
+            tr []
+                [ td
+                    [ class "linkText"
+                    , value breed.name
+                    , HE.on "click" <| D.map GoDetails HE.targetValue
+                    ]
+                    [ text <| breed.name ]
+                , td [] [ text <| subBreedsText breed ]
+                ]
+    in
     div []
         [ div [ class "breedTableDiv" ]
             [ table []
-                [ thead [] [ tr [] [ th [ class "breedCol" ] [ text "Breed" ], th [] [ text "Sub-Breeds" ] ] ]
+                [ thead []
+                    [ tr []
+                        [ th [ class "breedCol" ] [ text "Breed" ]
+                        , th [] [ text "Sub-Breeds" ]
+                        ]
+                    ]
                 , tbody [ class "breedTBody" ]
-                    (L.map
-                        (\b ->
-                            let
-                                subBreedsTxt =
-                                    if L.isEmpty b.subBreeds then
-                                        ""
-
-                                    else
-                                        S.concat <| L.intersperse ", " b.subBreeds
-                            in
-                            tr []
-                                [ td
-                                    [ class "linkText"
-                                    , value b.name
-                                    , HE.on "click" <| D.map Common.GoDetails HE.targetValue
-                                    ]
-                                    [ text <| b.name ]
-                                , td [] [ text subBreedsTxt ]
-                                ]
-                        )
-                     <|
-                        L.sortBy .name <|
-                            Dict.values model.allBreeds
-                    )
+                    (L.map mkRow sortedBreeds)
                 ]
             ]
         ]
 
 
-viewDetails : Model -> Html Common.Msg
+viewDetails : Model -> Html Msg
 viewDetails model =
     let
         numImages =
@@ -91,10 +95,10 @@ viewDetails model =
             model.pageStartIdx + 1
 
         lastIdx =
-            Basics.min numImages <| model.pageStartIdx + Common.numImagesPerPage
+            Basics.min numImages <| model.pageStartIdx + numImagesPerPage
     in
     div []
-        [ button [ HE.onClick Common.ReturnToBreedsList ] [ text "<<< Return to Dog Breeds List" ]
+        [ button [ HE.onClick ReturnToBreedsList ] [ text "<<< Return to Dog Breeds List" ]
         , hr [] []
         , h3 []
             [ text <|
@@ -116,11 +120,11 @@ viewDetails model =
         ]
 
 
-pagingButtons : Int -> Int -> Int -> Html Common.Msg
+pagingButtons : Int -> Int -> Int -> Html Msg
 pagingButtons firstIdx lastIdx numImages =
     let
         shouldDisplayPaging =
-            numImages > Common.numImagesPerPage
+            numImages > numImagesPerPage
 
         prevDisabled =
             firstIdx == 1
@@ -130,8 +134,8 @@ pagingButtons firstIdx lastIdx numImages =
     in
     div [] <|
         if shouldDisplayPaging then
-            [ button [ class "previous", disabled prevDisabled, HE.onClick Common.PrevPage ] [ text "« Previous" ]
-            , button [ class "next", disabled nextDisabled, HE.onClick Common.NextPage ] [ text "Next »" ]
+            [ button [ class "previous", disabled prevDisabled, HE.onClick PrevPage ] [ text "« Previous" ]
+            , button [ class "next", disabled nextDisabled, HE.onClick NextPage ] [ text "Next »" ]
             , br [] []
             , br [] []
             ]
@@ -140,17 +144,13 @@ pagingButtons firstIdx lastIdx numImages =
             []
 
 
-imagePage : Int -> Int -> Array String -> Html Common.Msg
+imagePage : Int -> Int -> Array String -> Html Msg
 imagePage firstIdx lastIdx urls =
+    let
+        mkImg url =
+            img [ src url, alt <| "image not loaded: " ++ url ] []
+    in
     div [] <|
-        L.map
-            (\url ->
-                img
-                    [ src url
-                    , alt <| "image not loaded: " ++ url
-                    ]
-                    []
-            )
-        <|
+        L.map mkImg <|
             A.toList <|
                 A.slice (firstIdx - 1) lastIdx urls

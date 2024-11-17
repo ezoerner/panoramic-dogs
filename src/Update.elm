@@ -1,21 +1,22 @@
 module Update exposing (update)
 
 import Array as A
-import Common
+import Common exposing (..)
 import Dict exposing (Dict)
 import HttpClient as HC
 import Maybe.Extra as MX
 import Model exposing (Model)
 
 
-update : Common.Msg -> Model -> ( Model, Cmd Common.Msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Common.GoDetails str ->
+        GoDetails str ->
             let
                 foundDetailBreedMay =
                     Dict.get str model.allBreeds
 
+                -- fetch image urls if detailBreed is present and has empty urls
                 needToFetchImageUrls =
                     Maybe.map (.imageUrls >> A.isEmpty) foundDetailBreedMay == Just True
             in
@@ -35,21 +36,21 @@ update msg model =
                 Cmd.none
             )
 
-        Common.Reload ->
+        Reload ->
             ( Model.loadingModel, HC.getBreeds )
 
-        Common.GotBreeds result ->
+        GotBreeds result ->
             case result of
                 Ok breeds ->
-                    ( Model Model.Success (Debug.log "got breeds" breeds) Nothing 0, Cmd.none )
+                    ( Model Model.Success breeds Nothing 0, Cmd.none )
 
                 Err _ ->
                     ( Model.failureModel "Unable to load the breeds.", Cmd.none )
 
-        Common.ReturnToBreedsList ->
+        ReturnToBreedsList ->
             ( { model | detailBreed = Nothing, pageStartIdx = 0 }, Cmd.none )
 
-        Common.GotImageUrls result ->
+        GotImageUrls result ->
             case result of
                 Ok urls ->
                     let
@@ -65,14 +66,14 @@ update msg model =
                     , Cmd.none
                     )
 
-        Common.NextPage ->
-            ( { model | pageStartIdx = model.pageStartIdx + Common.numImagesPerPage }, Cmd.none )
+        NextPage ->
+            ( { model | pageStartIdx = model.pageStartIdx + numImagesPerPage }, Cmd.none )
 
-        Common.PrevPage ->
-            ( { model | pageStartIdx = model.pageStartIdx - Common.numImagesPerPage }, Cmd.none )
+        PrevPage ->
+            ( { model | pageStartIdx = model.pageStartIdx - numImagesPerPage }, Cmd.none )
 
 
-updateAllBreeds : Maybe Common.Breed -> Dict String Common.Breed -> Dict String Common.Breed
+updateAllBreeds : Maybe Breed -> Dict String Breed -> Dict String Breed
 updateAllBreeds newBreedMay allBreeds =
     case newBreedMay of
         Nothing ->
