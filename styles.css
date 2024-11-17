@@ -20,7 +20,6 @@ tr:nth-child(even) {
 .breedTableDiv {
   height: 650px;
   overflow: auto;
-  /* margin: auto; */
   width: 95%;
 }
 
